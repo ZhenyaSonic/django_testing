@@ -29,7 +29,7 @@ class TestRoutes(TestCase):
             ('users:logout', None),
             ('users:signup', None),
         )
-        for page in urls:
+        for page, _ in urls:
             with self.subTest(page=page):
                 url = reverse(page)
                 response = self.client.get(url)

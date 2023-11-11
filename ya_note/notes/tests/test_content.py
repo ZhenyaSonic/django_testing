@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
 
 from notes.models import Note
@@ -11,7 +11,11 @@ class SetUpTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.author = User.objects.create(username='Лев Толстой')
+        cls.author_client = Client()
+        cls.author_client.force_login(cls.author)
         cls.reader = User.objects.create(username='Читатель простой')
+        cls.reader_client = Client()
+        cls.reader_client.force_login(cls.reader)
         cls.note = Note.objects.create(
             title='Заголовок',
             text='Текст заметки',
@@ -22,17 +26,15 @@ class SetUpTestCase(TestCase):
 
 class TestNoteList(SetUpTestCase):
     def test_list_context(self):
-        user_notes = (
-            (self.author, True),
-            (self.reader, False),
+        clients = (
+            (self.author_client, True),
+            (self.reader_client, False),
         )
         url = reverse('notes:list')
-        for user, value in user_notes:
-            with self.subTest(user=user.username, value=value):
-                response = self.client.get(url)
-                note_objects_list = self.note in response.context[
-                    'object_list']
-                self.assertEqual(note_objects_list, value)
+        for client, value in clients:
+            with self.subTest(client=client):
+                object_list = client.get(url).context['object_list']
+                self.assertEqual(self.note in object_list, value)
 
     def test_pages_contains_form(self):
         urls = (

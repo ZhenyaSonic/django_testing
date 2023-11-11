@@ -32,9 +32,8 @@ class TestNews(TestCase):
         }
 
     def test_user_can_create_note(self):
-        self.client.force_login(self.user)
         response = self.auth_client.post(self.url, data=self.form_data)
-        self.assertRedirects(response, f'{self.url}#comments')
+        self.assertRedirects(response, SUCCESS_URL)
         note_count = Note.objects.count()
         self.assertEqual(note_count, 1)
         note = Note.objects.get()
@@ -47,11 +46,6 @@ class TestNews(TestCase):
         self.client.post(self.url, data=self.form_data)
         note_count = Note.objects.count()
         self.assertEqual(note_count, 0)
-        note = Note.objects.get()
-        self.assertEqual(note.text, self.form_data['text'])
-        self.assertEqual(note.title, self.form_data['title'])
-        self.assertEqual(note.slug, self.form_data['slug'])
-        self.assertEqual(note.author, self.user)
 
     def test_slug_unique(self):
         self.client.force_login(self.user)
@@ -61,8 +55,9 @@ class TestNews(TestCase):
         self.assertFormError(response, form='form', field='slug', errors=warn)
 
     def test_slug_repeat(self):
-        note = Note.create_note(title="Заметка без slug",
-                                content="Содержание без slug")
+        note = Note.objects.create(title="Заметка без slug",
+                                   text="Содержание без slug",
+                                   author=self.user)
         expected_slug = slugify(note.title)
         self.assertEqual(note.slug, expected_slug)
 

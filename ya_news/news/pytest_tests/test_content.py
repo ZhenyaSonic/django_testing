@@ -1,20 +1,17 @@
 import pytest
 from django.urls import reverse
 from django.conf import settings
-
+from news.forms import CommentForm
 pytestmark = pytest.mark.django_db
 
 
-@pytest.mark.django_db
-def test_news_count(client):
+def test_news_count(client, news_list):
     url = reverse('news:home')
     response = client.get(url)
-    object_list = response.context['object_list']
-    news_count = len(object_list)
+    news_count = len(response.context['object_list'])
     assert news_count == settings.NEWS_COUNT_ON_HOME_PAGE
 
 
-@pytest.mark.django_db
 def test_news_order(client):
     url = reverse('news:home')
     response = client.get(url)
@@ -27,7 +24,6 @@ def test_news_order(client):
         assert objects_list[i].date == sorted_list[i].date
 
 
-@pytest.mark.django_db
 def test_comments_order(news, client):
     url = reverse('news:detail', args=[news.pk])
     response = client.get(url)
@@ -40,14 +36,12 @@ def test_comments_order(news, client):
     assert all_dates == sorted_dates
 
 
-@pytest.mark.django_db
-def test_anonymous_client_has_no_form(client):
-    response = client.get('news:detail')
+def test_anonymous_client_has_no_form(client, news):
+    response = client.get(reverse('news:detail', args=(news.id,)))
     assert 'form' not in response.context
 
 
-@pytest.mark.django_db
-def test_authorized_client_has_form(admin_client):
-    url = reverse('news:detail')
-    response = admin_client.get(url)
+def test_authorized_client_has_form(client, news, author_client):
+    response = author_client.get(reverse('news:detail', args=(news.id,)))
     assert 'form' in response.context
+    assert isinstance(response.context['form'], CommentForm)
