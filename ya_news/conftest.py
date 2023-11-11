@@ -67,21 +67,6 @@ def comments_list(news, author):
 
 
 @pytest.fixture
-def admin_comment(admin_user, news):
-    comment = Comment.objects.create(
-        news=news,
-        author=admin_user,
-        text='Текст',
-    )
-    return comment
-
-
-@pytest.fixture
-def id_admin_comment(admin_comment):
-    return admin_comment.pk,
-
-
-@pytest.fixture
 def form_data():
     return {
         'text': 'Новый текст коментария'
