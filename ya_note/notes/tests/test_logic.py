@@ -43,8 +43,10 @@ class TestNews(TestCase):
         self.assertEqual(note.author, self.user)
 
     def test_anonymous_cant_create_note(self):
-        self.client.post(self.url, data=self.form_data)
+        response = self.client.post(self.url, data=self.form_data)
         note_count = Note.objects.count()
+
+        self.assertEqual(response.status_code, 302)
         self.assertEqual(note_count, 0)
 
     def test_slug_unique(self):
@@ -95,8 +97,8 @@ class TestNotesEditDelete(TestCase):
         self.assertEqual(self.note.text, self.NEW_NOTE_TEXT)
 
     def test_other_user_cant_edit_note_of_another_user(self):
-        res = self.reader_client.post(self.edit_note_url, self.form_data)
-        self.assertEqual(res.status_code, HTTPStatus.NOT_FOUND)
+        responce = self.reader_client.post(self.edit_note_url, self.form_data)
+        self.assertEqual(responce.status_code, HTTPStatus.NOT_FOUND)
         note_from_db = Note.objects.filter(id=self.note.id).first()
         self.assertIsNotNone(note_from_db)
         self.assertEqual(self.note.title, note_from_db.title)
