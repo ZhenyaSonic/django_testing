@@ -24,9 +24,9 @@ def test_pages_availability(client, name, args):
 
 
 def test_availability_for_comment_edit_and_delete(
-        author_client,
-        client,
-        news_list
+    author_client,
+    client,
+    news_list
 ):
     user_statuses = [
         (author_client, HTTPStatus.OK),

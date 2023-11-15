@@ -12,23 +12,24 @@ pytestmark = pytest.mark.django_db
 
 
 def test_anonymous_cant_create_comment(
-        client,
-        news,
-        form_data
+    client,
+    news,
+    form_data
 ):
     url = reverse('news:detail', args=(news.id,))
     response = client.post(url, data=form_data)
     login_url = reverse('users:login')
     expected_url = f'{login_url}?next={url}'
+    assert response.status_code == HTTPStatus.FOUND
     assertRedirects(response, expected_url)
     assert Comment.objects.count() == 0
 
 
 def test_user_can_create_comment(
-        admin_client,
-        admin_user,
-        form_data,
-        news
+    admin_client,
+    admin_user,
+    form_data,
+    news
 ):
     url = reverse('news:detail', args=(news.id,))
     response = admin_client.post(url, data=form_data)
@@ -42,8 +43,8 @@ def test_user_can_create_comment(
 
 
 def test_user_cant_use_bad_words(
-        author_client,
-        news
+    author_client,
+    news
 ):
     bad_words_data = {'text': f'Какой-то text, {BAD_WORDS}, еще text'}
     url = reverse('news:detail', args=(news.id,))
@@ -53,10 +54,10 @@ def test_user_cant_use_bad_words(
 
 
 def test_author_can_edit_comment(
-        author_client,
-        news,
-        comment,
-        form_data
+    author_client,
+    news,
+    comment,
+    form_data
 ):
     url = reverse('news:edit', args=[comment.pk])
     response = author_client.post(url, data=form_data)
@@ -67,10 +68,10 @@ def test_author_can_edit_comment(
 
 
 def test_author_can_delete_comment(
-        author_client,
-        news,
-        comment,
-        form_data
+    author_client,
+    news,
+    comment,
+    form_data
 ):
     url = reverse('news:delete', args=[comment.pk])
     response = author_client.delete(url, data=form_data)
@@ -80,9 +81,9 @@ def test_author_can_delete_comment(
 
 
 def test_other_user_cant_edit_comment(
-        admin_client,
-        comment,
-        form_data
+    admin_client,
+    comment,
+    form_data
 ):
     url = reverse('news:edit', args=[comment.pk])
     old_comment = comment.text
@@ -93,8 +94,8 @@ def test_other_user_cant_edit_comment(
 
 
 def test_other_user_cant_delete_comment(
-        admin_client,
-        comment
+    admin_client,
+    comment
 ):
     url = reverse('news:delete', args=[comment.pk])
     expected_count = Comment.objects.count()
